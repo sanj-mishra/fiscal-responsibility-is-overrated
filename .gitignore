@@ -1,0 +1,12 @@
+# Financial data — never commit. Stays local only.
+data/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# OS / editor
+.DS_Store
