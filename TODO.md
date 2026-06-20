@@ -2,14 +2,17 @@
 
 A private, **local-first** finance app.
 
-CSV statements in → **Ollama** categorizes → **Streamlit** dashboard → a file-based
+PDF statements in → **Ollama** categorizes → **Streamlit** dashboard → a file-based
 memory that grows into an advisor learning your goals. Nothing leaves your machine.
 
 This file is the plan, not the code. Build is sequenced so each phase is useful on its own.
 
 ## Chosen defaults
 
-- **Input:** CSV exports you download and drop in `data/inbox/` (no stored credentials).
+- **Input:** PDF statements you drop in `data/inbox/` (no stored credentials).
+- **PDF parsing:** hybrid — `pdfplumber` extracts text/tables first (fast, exact
+  numbers); fall back to Ollama only when a layout won't parse cleanly. Reconcile
+  parsed transactions against the statement's stated total before saving.
 - **Stack:** Python + Streamlit.
 - **Storage:** SQLite for transactions; JSON/Markdown files for the agent's memory.
 - **Model:** start with `llama3.2`; pull a larger model for the advice phase.
@@ -17,7 +20,11 @@ This file is the plan, not the code. Build is sequenced so each phase is useful 
 ## Phase 1 — Ingest + Dashboard
 
 - [ ] SQLite schema for normalized transactions, with a dedup hash (re-import is safe).
-- [ ] CSV ingest: map common bank columns; handle sign conventions and date formats.
+- [ ] PDF ingest (hybrid): `pdfplumber` text/table extraction → Ollama fallback for
+      messy layouts → normalize (date, amount, merchant, account). Handle sign
+      conventions and date formats.
+- [ ] Validation: reconcile parsed totals against the statement; flag mismatches
+      instead of silently importing bad numbers.
 - [ ] Categorize: rules-cache first (`merchant → category`), Ollama only for new merchants.
 - [ ] Streamlit dashboard: spend by category, top merchants, month-over-month trend.
 
@@ -38,7 +45,7 @@ This file is the plan, not the code. Build is sequenced so each phase is useful 
 
 - [ ] Subscription / recurring-charge detection.
 - [ ] Anomaly flags ("dining up 40% vs your 3-month average").
-- [ ] Optional alternate loaders: PDF statements, Plaid.
+- [ ] Optional alternate loaders: CSV exports, Plaid.
 
 ## Safety
 
@@ -48,5 +55,5 @@ This file is the plan, not the code. Build is sequenced so each phase is useful 
 
 ## Open questions
 
-- Which bank/card CSV formats to support first?
+- Which bank/card PDF statements to support first? (need one sample to build against)
 - Pull a larger Ollama model now, or wait until Phase 3?
